@@ -3,7 +3,16 @@
 Ключевая задача — разработать отказоустойчивую инфраструктуру для сайта, включающую мониторинг, сбор логов и резервное копирование основных данных. Инфраструктура должна размещаться в [Yandex Cloud](https://cloud.yandex.com/) и отвечать минимальным стандартам безопасности: запрещается выкладывать токен от облака в git. Используйте [инструкцию](https://cloud.yandex.ru/docs/tutorials/infrastructure-management/terraform-quickstart#get-credentials).
 
 ## Инфраструктура
-Для развёртки инфраструктуры используйте Terraform и Ansible.  
+Для развёртки инфраструктуры используйте Terraform и Ansible. 
+```bash
+ansible-playbook -i ansible/inventory/inventory.ini  ansible/site-zabbix.yaml
+ansible-playbook -i ansible/inventory/inventory.ini  ansible/site-zabbix-agent.yaml 
+ansible-playbook -i ansible/inventory/inventory.ini  ansible/site-elasticsearch.yaml     
+ansible-playbook -i ansible/inventory/inventory.ini  ansible/site-kibana.yaml 
+ansible-playbook -i ansible/inventory/inventory.ini  ansible/site-filebeat.yaml
+ssh -J dic72@84.201.130.235  dic72@10.0.1.3
+```
+
 
 ### Сайт
 Создайте две ВМ в разных зонах, установите на них сервер nginx, если его там нет. ОС и содержимое ВМ должно быть идентичным, это будут наши веб-сервера.
@@ -32,17 +41,17 @@
 
 ### Мониторинг
 Создайте ВМ, разверните на ней Zabbix. На каждую ВМ установите Zabbix Agent, настройте агенты на отправление метрик в Zabbix. 
-
+![image](screenshots/3_1.jpg) 
 Настройте дешборды с отображением метрик, минимальный набор — по принципу USE (Utilization, Saturation, Errors) для CPU, RAM, диски, сеть, http запросов к веб-серверам. Добавьте необходимые tresholds на соответствующие графики.
-
+![image](screenshots/3_2.jpg) 
 ### Логи
 Cоздайте ВМ, разверните на ней Elasticsearch. Установите filebeat в ВМ к веб-серверам, настройте на отправку access.log, error.log nginx в Elasticsearch.
 
 Создайте ВМ, разверните на ней Kibana, сконфигурируйте соединение с Elasticsearch.
-
+![image](screenshots/4_1.jpg) 
 ### Сеть
 Разверните один VPC. Сервера web, Elasticsearch поместите в приватные подсети. Сервера Zabbix, Kibana, application load balancer определите в публичную подсеть.
-
+![image](screenshots/5_1.jpg) 
 Настройте [Security Groups](https://cloud.yandex.com/docs/vpc/concepts/security-groups) соответствующих сервисов на входящий трафик только к нужным портам.
 
 Настройте ВМ с публичным адресом, в которой будет открыт только один порт — ssh.  Эта вм будет реализовывать концепцию  [bastion host]( https://cloud.yandex.ru/docs/tutorials/routing/bastion) . Синоним "bastion host" - "Jump host". Подключение  ansible к серверам web и Elasticsearch через данный bastion host можно сделать с помощью  [ProxyCommand](https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#network-delegate-to-vs-proxycommand) . Допускается установка и запуск ansible непосредственно на bastion host.(Этот вариант легче в настройке)
