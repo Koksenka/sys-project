@@ -1,0 +1,24 @@
+# Minimal Kibana Configuration
+server.port: "{{ kibana_port | default(5601) }}"
+server.host: "{{ kibana_server_host | default('0.0.0.0') }}"
+server.name: "{{ ansible_hostname }}"
+elasticsearch.hosts: ["http://{{ elasticsearch_hosts }}:9200"]
+
+# =================== System: Logging ===================
+# Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
+#logging.root.level: debug
+# Enables you to specify a file where Kibana stores log output.
+logging:
+  appenders:
+    file:
+      type: file
+      fileName: /var/log/kibana/kibana.log
+      layout:
+        type: json
+  root:
+    appenders:
+      - default
+      - file
+
+# Specifies the path where Kibana creates the process ID file.
+pid.file: /run/kibana/kibana.pid

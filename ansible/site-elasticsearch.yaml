@@ -1,0 +1,48 @@
+---
+- name: Install Elasticsearch 
+  hosts: elasticsearch_server
+  become: true
+  tasks:   
+    - name: Install Java (required dependency)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: Download and install Elasticsearch from Yandex mirror
+      apt:
+        deb: "https://mirror.yandex.ru/mirrors/elastic/{{ elastic_majorversion }}/pool/main/e/elasticsearch/elasticsearch-{{ elastic_majorversion }}.{{ elastic_minorversion }}-amd64.deb"
+        state: present
+    
+    - name: Configure elasticsearch.yml
+      copy:
+        content: |
+          cluster.name: netology-cluster
+          node.name: "{{ ansible_hostname }}"
+          path.data: /var/lib/elasticsearch
+          path.logs: /var/log/elasticsearch
+          network.host: 0.0.0.0
+          http.port: 9200
+          discovery.type: single-node      
+          xpack.security.enabled: false
+          xpack.security.enrollment.enabled: false
+          xpack.security.http.ssl.enabled: false
+          xpack.security.transport.ssl.enabled: false        
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: root
+        group: elasticsearch
+        mode: '0644'
+      notify: restart_elasticsearch  
+
+    - name: Start and enable Elasticsearch
+      systemd:
+        name: elasticsearch
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+  handlers:
+    - name: restart_elasticsearch
+      systemd:
+        name: elasticsearch
+        state: restarted    

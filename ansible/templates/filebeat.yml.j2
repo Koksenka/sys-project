@@ -1,0 +1,20 @@
+# ============================== Filebeat inputs ===============================
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/*.log
+  fields:
+    type: nginx_logs  
+  fields_under_root: true
+  scan_frequency: 5s
+
+# ------------------------------ Elasticsearch Output -------------------------------
+output.elasticsearch:
+  hosts: ["http://{{ elasticsearch_hosts }}:9200"]
+
+
+# ================================= Processors =================================
+processors:
+  - drop_fields:
+      fields: ["beat", "input_type", "prospector", "agent", "ecs"]

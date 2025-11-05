@@ -1,0 +1,42 @@
+############ GENERAL PARAMETERS #################
+
+### Option: PidFile
+PidFile=/run/zabbix/zabbix_agentd.pid
+
+### Option: LogType
+LogFile=/var/log/zabbix/zabbix_agentd.log
+
+### Option: LogFileSize
+LogFileSize=0
+
+### Option: DebugLevel
+#       Specifies debug level:
+#       0 - basic information about starting and stopping of Zabbix processes
+#       1 - critical information
+#       2 - error information
+#       3 - warnings
+#       4 - for debugging (produces lots of information)
+#       5 - extended debugging (produces even more information)
+#
+# Mandatory: no
+# Range: 0-5
+# Default:
+# DebugLevel=3
+
+### Option: Server
+Server={{ zabbix_server }}
+
+### Option: ServerActive
+ServerActive={{ zabbix_server_active }}
+
+### Option: Hostname
+Hostname=Zabbix server
+
+### Option: Include
+#       You may include individual files or all files in a directory in the configuration file.
+#       Installing Zabbix will create include directory in /usr/local/etc, unless modified during the compile time.
+#
+# Mandatory: no
+# Default:
+# Include=
+Include=/etc/zabbix/zabbix_agentd.d/*.conf

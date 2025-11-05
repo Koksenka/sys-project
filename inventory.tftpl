@@ -1,0 +1,44 @@
+[web_servers]
+%{~ for i in web-servers ~}
+%{if length(i["network_interface"][0]["nat_ip_address"]) > 0}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} nat_ip=${i["network_interface"][0]["nat_ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{else}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{endif}
+%{~ endfor ~}
+
+[bastion_server]
+%{~ for i in [bastion] ~}
+%{if length(i["network_interface"][0]["nat_ip_address"]) > 0}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["nat_ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+  %{else}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+  %{endif}
+%{~ endfor ~}
+
+[zabbix_server]
+%{~ for i in [zabbix] ~}
+%{if length(i["network_interface"][0]["nat_ip_address"]) > 0}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} nat_ip=${i["network_interface"][0]["nat_ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{else}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{endif}
+%{~ endfor ~}
+
+[elasticsearch_server]
+%{~ for i in [elasticsearch] ~}
+%{if length(i["network_interface"][0]["nat_ip_address"]) > 0}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} nat_ip=${i["network_interface"][0]["nat_ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{else}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{endif}
+%{~ endfor ~}
+
+[kibana_server]
+%{~ for i in [kibana] ~}
+%{if length(i["network_interface"][0]["nat_ip_address"]) > 0}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} nat_ip=${i["network_interface"][0]["nat_ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{else}
+  ${i["name"]} ansible_host=${i["network_interface"][0]["ip_address"]} ip=${i["network_interface"][0]["ip_address"]} ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=${username}@${bastion["network_interface"][0]["nat_ip_address"] != "" ? bastion["network_interface"][0]["nat_ip_address"] : bastion["network_interface"][0]["ip_address"]}'
+  %{endif}
+%{~ endfor ~}

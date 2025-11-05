@@ -1,0 +1,74 @@
+---
+- name: Deploy and configure Kibana from Yandex mirror
+  hosts: kibana_server
+  become: true
+  tasks:
+    - name: Install dependencies
+      apt:
+        name:
+          - curl
+          - wget
+        state: present
+        update_cache: yes
+
+    - name: Download Kibana from Yandex mirror
+      get_url:
+        url: "https://mirror.yandex.ru/mirrors/elastic/{{ kibana_majorversion }}/pool/main/k/kibana/kibana-{{ kibana_majorversion }}.{{ kibana_minorversion }}-amd64.deb"
+        dest: /tmp/kibana-{{ kibana_majorversion }}.{{ kibana_minorversion }}-amd64.deb
+        timeout: 60
+        mode: '0644'
+      register: download_kibana
+
+    - name: Install Kibana package
+      apt:
+        deb: /tmp/kibana-{{ kibana_majorversion }}.{{ kibana_minorversion }}-amd64.deb
+        state: present
+      when: download_kibana.changed      
+
+    - name: Configure Kibana
+      template:
+        src: kibana.yml.j2
+        dest: /etc/kibana/kibana.yml
+        owner: kibana
+        group: kibana
+        mode: '0640'      
+
+    - name: Stop Kibana if running (to ensure clean start)
+      systemd:
+        name: kibana
+        state: stopped
+      ignore_errors: yes
+
+    - name: Enable and start Kibana service
+      systemd:
+        name: kibana
+        enabled: yes
+        state: restarted  
+        daemon_reload: yes  
+
+    - name: Wait for Kibana to start
+      wait_for:
+        port: "{{ kibana_port | default(5601) }}"
+        host: "0.0.0.0"
+        delay: 10
+        timeout: 120
+        state: started
+      register: kibana_ready
+
+    - name: Check Kibana status
+      uri:
+        url: "http://{{ ansible_host }}:{{ kibana_port | default(5601) }}/api/status"
+        method: GET
+        return_content: yes
+        status_code: 200
+      register: kibana_status
+      until: kibana_status.status == 200
+      retries: 15
+      delay: 5
+
+    # - name: Clean up downloaded package
+    #   file:
+    #     path: /tmp/kibana-{{ kibana_majorversion }}.{{ kibana_minorversion }}-amd64.deb
+    #     state: absent
+
+  

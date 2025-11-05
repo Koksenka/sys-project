@@ -1,0 +1,81 @@
+#cloud-config
+users:
+  - name: ${username}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]    
+    ssh_authorized_keys:          
+      - ${ssh_public_key}          
+package_update: true
+package_upgrade: true
+packages:
+  - nginx  
+write_files:
+- path: /var/www/html/index.html
+  content: |
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <title>Диплом | Валерий Москаленко</title>
+        <style>
+            body {
+                font-family: Arial;
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 20px;
+                line-height: 1.4;
+            }
+            h1 {
+                color: #333;
+                border-bottom: 2px solid #ffcc00;
+                padding-bottom: 10px;
+            }
+            .block {
+                background: #f5f5f5;
+                padding: 15px;
+                margin: 15px 0;
+                border-radius: 5px;
+            }
+            .hostname {
+                background: #ffeb3b;
+                padding: 10px;
+                font-weight: bold;
+                text-align: center;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="hostname">Hostname: HOSTNAME_PLACEHOLDER</div>
+        
+        <h1>Дипломная работа</h1>
+        
+        <div class="block">
+            <strong>Студент:</strong> Валерий Москаленко<br>
+            <strong>Профессия:</strong> Системный администратор
+        </div>
+
+        <div class="block">
+            <strong>Задача:</strong><br>
+            разработать отказоустойчивую инфраструктуру в Yandex Cloud, включающую мониторинг, сбор логов и резервное копирование основных данных. 
+        </div>
+
+        <div class="block">
+            <strong>Компоненты:</strong>
+            <ul>
+                <li>Веб-сервер</li> 
+                <li>Мониторинг</li>
+                <li>Сбор логов</li>
+                <li>Сеть</li>
+                <li>Резервное копирование</li>
+            </ul>
+        </div>
+    </body>
+    </html>
+runcmd: 
+  - systemctl enable nginx
+  - systemctl start nginx
+  - hostname=$(hostname)
+  - sed -i "s/HOSTNAME_PLACEHOLDER/$hostname/g" /var/www/html/index.html
+  - systemctl restart nginx

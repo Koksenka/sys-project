@@ -1,0 +1,8 @@
+zabbix_version: 6.0
+ansible_user: dic72
+ansible_python_interpreter: "{{ ansible_facts['python']['executable'] | default('/usr/bin/python3') }}"
+zabbix_server: "{{ hostvars[groups['zabbix_server'][0]]['ansible_host'] }}"
+zabbix_server_active:  "{{ hostvars[groups['zabbix_server'][0]]['ansible_host'] }}"
+elasticsearch_hosts: "{{ hostvars[groups['elasticsearch_server'][0]]['ansible_host'] }}"
+filebeat_majorversion: 8
+filebeat_minorversion: 8.0

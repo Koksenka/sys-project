@@ -1,0 +1,65 @@
+- name: Install and configure Filebeat on web servers 
+  hosts: web_servers
+  become: yes
+
+  handlers:
+    - name: restart_filebeat
+      systemd:
+        name: filebeat
+        state: restarted
+        daemon_reload: yes
+
+  tasks:
+    - name:  Download Filebeat from Yandex mirror
+      get_url:
+        url: "https://mirror.yandex.ru/mirrors/elastic/{{ filebeat_majorversion }}/pool/main/f/filebeat/filebeat-{{ filebeat_majorversion }}.{{ filebeat_minorversion }}-amd64.deb"
+        dest: /tmp/filebeat-{{ filebeat_majorversion }}.{{ filebeat_minorversion }}-amd64.deb
+        timeout: 60
+        mode: '0644'
+      register: download_filebeat
+      ignore_errors: false
+
+    - name: Install Filebeat package
+      apt:
+        deb: /tmp/filebeat-{{ filebeat_majorversion }}.{{ filebeat_minorversion }}-amd64.deb
+        state: present
+      when: download_filebeat.changed
+
+    - name: Configure filebeat.yml
+      template:
+        src: filebeat.yml.j2
+        dest: /etc/filebeat/filebeat.yml
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart_filebeat  
+
+    # - name: Configure filebeat.yml
+    #   copy:
+    #     content: |
+    #       filebeat.inputs:
+    #         - type: filestream
+    #           enabled: true
+    #           paths:
+    #             - /var/log/nginx/access.log
+    #           tags: ["nginx-access"]
+
+    #         - type: filestream
+    #           enabled: true
+    #           paths:
+    #             - /var/log/nginx/error.log
+    #           tags: ["nginx-error"]
+
+    #       output.elasticsearch:
+    #         hosts: ["http://{{ elasticsearch_hosts }}:9200"]
+          
+    #       setup.dashboards.enabled: false
+
+    #       processors:
+    #         - add_host_metadata: ~
+    #         - add_cloud_metadata: ~
+
+    #     dest: /etc/filebeat/filebeat.yml
+    #     owner: root
+    #     group: root
+    #     mode: '0644'     
